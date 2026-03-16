@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
+import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const AppRoutes = () => (
     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+    <Route path="/post/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  profile: { handle: string; bio: string | null; user_id: string } | null;
+  profile: { handle: string; bio: string | null; user_id: string; avatar_url: string | null } | null;
   signOut: () => Promise<void>;
 }
 
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('handle, bio, user_id').eq('user_id', user.id).maybeSingle()
+    supabase.from('profiles').select('handle, bio, user_id, avatar_url').eq('user_id', user.id).maybeSingle()
       .then(({ data }) => {
         setProfile(data);
         setLoading(false);

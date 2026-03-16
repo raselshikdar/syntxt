@@ -12,35 +12,41 @@ export interface PostWithProfile {
   handle: string;
   like_count: number;
   repost_count: number;
+  reply_count: number;
   liked_by_me: boolean;
   saved_by_me: boolean;
   reposted_by_me: boolean;
-  // For reposts, original post content
   original_content?: string;
   original_handle?: string;
 }
 
 async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]> {
-  // Fetch posts with profile handles
+  // Fetch top-level posts (not replies)
   const { data: posts, error } = await supabase
     .from('posts')
     .select('id, user_id, content, repost_of, reply_to, created_at')
+    .is('reply_to', null)
     .order('created_at', { ascending: false })
     .limit(100);
 
   if (error || !posts) return [];
 
-  // Get all unique user_ids
   const userIds = [...new Set(posts.map(p => p.user_id))];
   const { data: profiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', userIds);
   const profileMap = new Map(profiles?.map(p => [p.user_id, p.handle]) ?? []);
 
-  // Get like counts
   const postIds = posts.map(p => p.id);
   const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', postIds);
   const { data: saves } = userId
     ? await supabase.from('saves').select('post_id').eq('user_id', userId).in('post_id', postIds)
     : { data: [] };
+
+  // Count replies per post
+  const { data: replyCounts } = await supabase.from('posts').select('reply_to').in('reply_to', postIds);
+  const replyCountMap = new Map<string, number>();
+  replyCounts?.forEach(r => {
+    if (r.reply_to) replyCountMap.set(r.reply_to, (replyCountMap.get(r.reply_to) ?? 0) + 1);
+  });
 
   // For reposts, fetch original posts
   const repostIds = posts.filter(p => p.repost_of).map(p => p.repost_of!);
@@ -48,7 +54,6 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
   if (repostIds.length > 0) {
     const { data: originals } = await supabase.from('posts').select('id, content, user_id').in('id', repostIds);
     originals?.forEach(o => originalMap.set(o.id, { content: o.content, user_id: o.user_id }));
-    // Also get handles for original post authors
     const origUserIds = [...new Set(originals?.map(o => o.user_id) ?? [])];
     if (origUserIds.length > 0) {
       const { data: origProfiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', origUserIds);
@@ -79,6 +84,7 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
       handle: profileMap.get(p.user_id) ?? 'unknown',
       like_count: postLikes.length,
       repost_count: repostCountMap.get(p.id) ?? 0,
+      reply_count: replyCountMap.get(p.id) ?? 0,
       liked_by_me: userId ? postLikes.includes(userId) : false,
       saved_by_me: savedSet.has(p.id),
       reposted_by_me: userId ? posts.some(rp => rp.repost_of === p.id && rp.user_id === userId) : false,

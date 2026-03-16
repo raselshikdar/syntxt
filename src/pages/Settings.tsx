@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, Sun, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import BottomNav from '@/components/BottomNav';
 import { toast } from 'sonner';
 
@@ -13,11 +14,47 @@ export default function Settings() {
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [handle, setHandle] = useState(profile?.handle ?? '');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const avatarUrl = (profile as any)?.avatar_url
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${(profile as any).avatar_url}`
+    : null;
 
   const toggleDark = () => {
     document.documentElement.classList.toggle('dark');
     setDarkMode(!darkMode);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/avatar.${ext}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+    
+    if (uploadError) {
+      toast.error('Upload failed: ' + uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: path } as any)
+      .eq('user_id', user.id);
+
+    if (updateError) toast.error(updateError.message);
+    else toast.success('Avatar updated!');
+    setUploading(false);
+    // Refresh page to show new avatar
+    window.location.reload();
   };
 
   const handleSave = async () => {
@@ -46,6 +83,41 @@ export default function Settings() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
+        {/* Avatar Section */}
+        <div className="border border-border rounded-md p-5 bg-card space-y-4">
+          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold">Avatar</h3>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-16 w-16">
+                {avatarUrl ? <AvatarImage src={avatarUrl} alt={profile?.handle} /> : null}
+                <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
+                  {profile?.handle?.slice(0, 2).toUpperCase() ?? '??'}
+                </AvatarFallback>
+              </Avatar>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute -bottom-1 -right-1 bg-fab text-fab-foreground rounded-full p-1.5"
+              >
+                <Camera size={12} />
+              </motion.button>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              <p>Click the camera icon to upload a new photo.</p>
+              <p className="mt-1">Max 2MB, JPG or PNG.</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        {/* Profile Section */}
         <div className="border border-border rounded-md p-5 bg-card space-y-4">
           <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold">Profile</h3>
           <div className="space-y-3">
