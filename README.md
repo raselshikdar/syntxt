@@ -1,5 +1,5 @@
 # [Syntxt] 
-— Minimalist Logic. Maximum Reach.
+#### — Minimalist Logic. Maximum Reach.
 
 **Syntxt** is a high-end, monospace-driven microblogging platform designed for pure text communication. It strips away the noise of modern social media—no images, no bulky UI, just raw context and crisp typography.
 
