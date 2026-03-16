@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts } from '@/hooks/usePosts';
 import { useFollowStatus, useFollowCounts, useToggleFollow } from '@/hooks/useFollow';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
@@ -29,6 +30,10 @@ export default function Profile() {
   const { data: userPosts = [] } = useUserPosts(profile?.user_id);
   const toggleFollow = useToggleFollow();
 
+  const avatarUrl = profile?.avatar_url
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
+    : null;
+
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
@@ -36,6 +41,8 @@ export default function Profile() {
       </div>
     );
   }
+
+  const joinDate = new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -49,33 +56,78 @@ export default function Profile() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
-        <div className="border border-border rounded-md p-5 bg-card space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-handle">@{profile.handle}</h2>
-              <p className="text-xs text-muted-foreground mt-1">{profile.bio || 'No bio yet.'}</p>
+        {/* Profile Header */}
+        <div className="border border-border rounded-md bg-card overflow-hidden">
+          {/* Banner area */}
+          <div className="h-20 bg-gradient-to-r from-muted to-accent" />
+          
+          <div className="px-5 pb-5">
+            {/* Avatar overlapping banner */}
+            <div className="flex items-end justify-between -mt-10">
+              <Avatar className="h-20 w-20 border-4 border-card">
+                {avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt={profile.handle} />
+                ) : null}
+                <AvatarFallback className="text-xl font-bold bg-muted text-muted-foreground">
+                  {profile.handle.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="mt-12">
+                {!isOwn && user ? (
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => toggleFollow(profile.user_id)}
+                    className={`text-xs font-semibold uppercase tracking-label px-5 py-2 rounded-md border transition-colors ${
+                      isFollowing
+                        ? 'bg-muted text-muted-foreground border-border'
+                        : 'bg-fab text-fab-foreground border-transparent'
+                    }`}
+                  >
+                    {isFollowing ? 'Unfollow' : 'Follow'}
+                  </motion.button>
+                ) : isOwn ? (
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate('/settings')}
+                    className="text-xs font-semibold uppercase tracking-label px-5 py-2 rounded-md border border-border text-foreground hover:bg-accent transition-colors"
+                  >
+                    Edit Profile
+                  </motion.button>
+                ) : null}
+              </div>
             </div>
-            {!isOwn && user && (
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => toggleFollow(profile.user_id)}
-                className={`text-xs font-semibold uppercase tracking-label px-4 py-1.5 rounded-md border transition-colors ${
-                  isFollowing
-                    ? 'bg-muted text-muted-foreground border-border'
-                    : 'bg-fab text-fab-foreground border-transparent'
-                }`}
-              >
-                {isFollowing ? 'Unfollow' : 'Follow'}
-              </motion.button>
-            )}
-          </div>
-          <div className="flex gap-6 text-xs text-muted-foreground">
-            <span><strong className="text-foreground">{counts.followers}</strong> followers</span>
-            <span><strong className="text-foreground">{counts.following}</strong> following</span>
+
+            {/* Info */}
+            <div className="mt-4 space-y-2">
+              <h2 className="text-lg font-bold text-handle">@{profile.handle}</h2>
+              {profile.bio && (
+                <p className="text-sm text-card-foreground leading-relaxed">{profile.bio}</p>
+              )}
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Calendar size={12} />
+                <span>Joined {joinDate}</span>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-5 mt-4 pt-3 border-t border-border/50">
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground font-bold">{counts.followers}</strong> followers
+              </span>
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground font-bold">{counts.following}</strong> following
+              </span>
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground font-bold">{userPosts.length}</strong> signals
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Posts */}
         <div className="space-y-4">
+          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
           {userPosts.length === 0 ? (
             <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
           ) : (

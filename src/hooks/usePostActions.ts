@@ -11,6 +11,7 @@ export function usePostActions() {
     qc.invalidateQueries({ queryKey: ['posts'] });
     qc.invalidateQueries({ queryKey: ['saved-posts'] });
     qc.invalidateQueries({ queryKey: ['user-posts'] });
+    qc.invalidateQueries({ queryKey: ['post-detail'] });
   };
 
   const toggleLike = async (postId: string) => {
@@ -20,7 +21,6 @@ export function usePostActions() {
       await supabase.from('likes').delete().eq('id', existing.id);
     } else {
       await supabase.from('likes').insert({ user_id: user.id, post_id: postId });
-      // Create notification
       const { data: post } = await supabase.from('posts').select('user_id').eq('id', postId).single();
       if (post && post.user_id !== user.id) {
         await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: user.id, type: 'like', post_id: postId });
@@ -59,5 +59,26 @@ export function usePostActions() {
     toast.success('Published!');
   };
 
-  return { toggleLike, toggleSave, repost, addPost };
+  const addReply = async (postId: string, content: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('posts').insert({ user_id: user.id, content, reply_to: postId });
+    if (error) { toast.error(error.message); return; }
+    // Notify post author
+    const { data: post } = await supabase.from('posts').select('user_id').eq('id', postId).single();
+    if (post && post.user_id !== user.id) {
+      await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: user.id, type: 'reply', post_id: postId });
+    }
+    invalidate();
+    toast.success('Reply posted!');
+  };
+
+  const deletePost = async (postId: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('posts').delete().eq('id', postId);
+    if (error) { toast.error(error.message); return; }
+    invalidate();
+    toast.success('Post deleted.');
+  };
+
+  return { toggleLike, toggleSave, repost, addPost, addReply, deletePost };
 }

@@ -15,7 +15,7 @@ export default function BottomNav() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-nav border-t border-nav-border z-30 flex items-center justify-around max-w-2xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 h-14 bg-nav border-t border-nav-border z-30 flex items-center justify-around max-w-2xl mx-auto">
       {items.map(({ icon: Icon, path, label }) => {
         const active = pathname === path;
         return (
@@ -23,11 +23,10 @@ export default function BottomNav() {
             key={path}
             whileTap={{ scale: 0.85 }}
             onClick={() => navigate(path)}
-            className={`flex flex-col items-center gap-0.5 transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`}
+            className={`flex items-center justify-center p-2 transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`}
             aria-label={label}
           >
             <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
-            <span className="text-[9px] uppercase tracking-label">{label}</span>
           </motion.button>
         );
       })}
