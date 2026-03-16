@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +50,28 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        handle: "hsl(var(--handle-color))",
+        timestamp: "hsl(var(--timestamp-color))",
+        "action-hover": "hsl(var(--action-hover))",
+        fab: {
+          DEFAULT: "hsl(var(--fab-bg))",
+          foreground: "hsl(var(--fab-fg))",
+        },
+        compose: "hsl(var(--compose-bg))",
+        nav: {
+          DEFAULT: "hsl(var(--nav-bg))",
+          border: "hsl(var(--nav-border))",
+        },
+        pill: {
+          active: "hsl(var(--pill-active-bg))",
+          "active-fg": "hsl(var(--pill-active-fg))",
+          inactive: "hsl(var(--pill-inactive-bg))",
+          "inactive-fg": "hsl(var(--pill-inactive-fg))",
+        },
+        counter: {
+          warning: "hsl(var(--counter-warning))",
+          danger: "hsl(var(--counter-danger))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -63,22 +88,17 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        brutalist: "var(--shadow-brutalist)",
+      },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
