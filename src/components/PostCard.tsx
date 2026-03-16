@@ -2,12 +2,11 @@ import { motion } from 'framer-motion';
 import { Heart, MessageSquare, Repeat, Bookmark } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '@/lib/store';
-import { CURRENT_USER_ID } from '@/lib/mockData';
-import type { Post } from '@/lib/mockData';
+import { usePostActions } from '@/hooks/usePostActions';
+import type { PostWithProfile } from '@/hooks/usePosts';
 
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (seconds < 60) return 'just now';
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
@@ -30,12 +29,12 @@ function ActionBtn({ icon, count, active, onClick }: { icon: React.ReactNode; co
   );
 }
 
-export default function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
+export default function PostCard({ post, index = 0 }: { post: PostWithProfile; index?: number }) {
   const navigate = useNavigate();
-  const { toggleLike, toggleSave, repost, savedPosts } = useStore();
-  const liked = post.likes.includes(CURRENT_USER_ID);
-  const saved = savedPosts.includes(post.id);
-  const reposted = post.reposts.includes(CURRENT_USER_ID);
+  const { toggleLike, toggleSave, repost } = usePostActions();
+  const isRepost = !!post.repost_of;
+  const displayContent = isRepost ? (post.original_content ?? '') : post.content;
+  const displayHandle = isRepost ? (post.original_handle ?? post.handle) : post.handle;
 
   return (
     <motion.div
@@ -45,30 +44,30 @@ export default function PostCard({ post, index = 0 }: { post: Post; index?: numb
       whileHover={{ y: -2 }}
       className="border border-border p-5 bg-card rounded-md space-y-3 shadow-brutalist"
     >
-      {post.repostOf && (
+      {isRepost && (
         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-label text-muted-foreground mb-1">
           <Repeat size={10} /> <span>@{post.handle} reposted</span>
         </div>
       )}
       <div className="flex justify-between items-baseline">
         <span
-          onClick={() => navigate(`/u/${post.handle}`)}
+          onClick={() => navigate(`/u/${displayHandle}`)}
           className="font-bold text-sm text-handle hover:underline cursor-pointer"
         >
-          @{post.handle}
+          @{displayHandle}
         </span>
         <span className="text-[10px] uppercase tracking-label text-timestamp">
-          {timeAgo(post.createdAt)}
+          {timeAgo(post.created_at)}
         </span>
       </div>
       <div className="prose prose-sm prose-slate dark:prose-invert max-w-none font-mono text-sm leading-relaxed text-card-foreground">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <ReactMarkdown>{displayContent}</ReactMarkdown>
       </div>
       <div className="flex justify-between pt-2 border-t border-border/50">
-        <ActionBtn icon={<Heart size={14} fill={liked ? 'currentColor' : 'none'} />} count={post.likes.length} active={liked} onClick={() => toggleLike(post.id)} />
+        <ActionBtn icon={<Heart size={14} fill={post.liked_by_me ? 'currentColor' : 'none'} />} count={post.like_count} active={post.liked_by_me} onClick={() => toggleLike(post.id)} />
         <ActionBtn icon={<MessageSquare size={14} />} onClick={() => {}} />
-        <ActionBtn icon={<Repeat size={14} />} count={post.reposts.length} active={reposted} onClick={() => repost(post.id)} />
-        <ActionBtn icon={<Bookmark size={14} fill={saved ? 'currentColor' : 'none'} />} active={saved} onClick={() => toggleSave(post.id)} />
+        <ActionBtn icon={<Repeat size={14} />} count={post.repost_count} active={post.reposted_by_me} onClick={() => repost(post.id)} />
+        <ActionBtn icon={<Bookmark size={14} fill={post.saved_by_me ? 'currentColor' : 'none'} />} active={post.saved_by_me} onClick={() => toggleSave(post.id)} />
       </div>
     </motion.div>
   );

@@ -1,22 +1,35 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
-import { useStore } from '@/lib/store';
-import { CURRENT_USER_ID } from '@/lib/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserPosts } from '@/hooks/usePosts';
+import { useFollowStatus, useFollowCounts, useToggleFollow } from '@/hooks/useFollow';
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
   const navigate = useNavigate();
-  const { users, posts, toggleFollow } = useStore();
-  const user = users.find(u => u.handle === handle);
-  const currentUser = users.find(u => u.id === CURRENT_USER_ID);
-  const isOwn = user?.id === CURRENT_USER_ID;
-  const isFollowing = currentUser?.following.includes(user?.id ?? '') ?? false;
-  const userPosts = posts.filter(p => p.userId === user?.id);
+  const { user } = useAuth();
 
-  if (!user) {
+  const { data: profile } = useQuery({
+    queryKey: ['profile', handle],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('handle', handle!).maybeSingle();
+      return data;
+    },
+    enabled: !!handle,
+  });
+
+  const isOwn = profile?.user_id === user?.id;
+  const { data: isFollowing = false } = useFollowStatus(profile?.user_id);
+  const { data: counts = { followers: 0, following: 0 } } = useFollowCounts(profile?.user_id);
+  const { data: userPosts = [] } = useUserPosts(profile?.user_id);
+  const toggleFollow = useToggleFollow();
+
+  if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
         User not found.
@@ -31,7 +44,7 @@ export default function Profile() {
           <motion.button whileTap={{ scale: 0.85 }} onClick={() => navigate(-1)}>
             <ArrowLeft size={18} />
           </motion.button>
-          <span className="text-sm font-bold">@{user.handle}</span>
+          <span className="text-sm font-bold">@{profile.handle}</span>
         </div>
       </header>
 
@@ -39,13 +52,13 @@ export default function Profile() {
         <div className="border border-border rounded-md p-5 bg-card space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-handle">@{user.handle}</h2>
-              <p className="text-xs text-muted-foreground mt-1">{user.bio}</p>
+              <h2 className="text-lg font-bold text-handle">@{profile.handle}</h2>
+              <p className="text-xs text-muted-foreground mt-1">{profile.bio || 'No bio yet.'}</p>
             </div>
-            {!isOwn && (
+            {!isOwn && user && (
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => toggleFollow(user.id)}
+                onClick={() => toggleFollow(profile.user_id)}
                 className={`text-xs font-semibold uppercase tracking-label px-4 py-1.5 rounded-md border transition-colors ${
                   isFollowing
                     ? 'bg-muted text-muted-foreground border-border'
@@ -57,8 +70,8 @@ export default function Profile() {
             )}
           </div>
           <div className="flex gap-6 text-xs text-muted-foreground">
-            <span><strong className="text-foreground">{user.followers.length}</strong> followers</span>
-            <span><strong className="text-foreground">{user.following.length}</strong> following</span>
+            <span><strong className="text-foreground">{counts.followers}</strong> followers</span>
+            <span><strong className="text-foreground">{counts.following}</strong> following</span>
           </div>
         </div>
 
