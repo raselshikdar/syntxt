@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useStore } from '@/lib/store';
+import { usePostActions } from '@/hooks/usePostActions';
 
 const MAX_CHARS = 300;
 
 export default function ComposeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [content, setContent] = useState('');
-  const addPost = useStore(s => s.addPost);
+  const { addPost } = usePostActions();
   const remaining = MAX_CHARS - content.length;
 
-  const publish = () => {
+  const publish = async () => {
     if (content.trim().length === 0 || content.length > MAX_CHARS) return;
-    addPost(content.trim());
+    await addPost(content.trim());
     setContent('');
     onClose();
   };
