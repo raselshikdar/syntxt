@@ -1,8 +1,9 @@
-# [Syntxt] — Minimalist Logic. Maximum Reach.
+# [Syntxt] 
+— Minimalist Logic. Maximum Reach.
 
 **Syntxt** is a high-end, monospace-driven microblogging platform designed for pure text communication. It strips away the noise of modern social media—no images, no bulky UI, just raw context and crisp typography.
 
-![Syntxt Banner](https://raw.githubusercontent.com/raselshikdar/syntxt/main/public/logo.png) ## ✨ Features
+![Syntxt Banner](https://raw.githubusercontent.com/raselshikdar/syntxt/main/public/syntxt-logo.png) ## ✨ Features
 
 - **Text-Only Experience**: Strictly limited to 300 characters to encourage concise and meaningful thoughts.
 - **Monospace Aesthetics**: Designed with a terminal/hacker vibe using high-quality monospace fonts.
