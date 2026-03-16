@@ -49,7 +49,7 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        setMessage('Check your email for a verification link.');
+        navigate('/verify-email');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
