@@ -1,73 +1,55 @@
-# Welcome to your Lovable project
+# [Syntxt] — Minimalist Logic. Maximum Reach.
 
-## Project info
+**Syntxt** is a high-end, monospace-driven microblogging platform designed for pure text communication. It strips away the noise of modern social media—no images, no bulky UI, just raw context and crisp typography.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Syntxt Banner](https://raw.githubusercontent.com/raselshikdar/syntxt/main/public/logo.png) ## ✨ Features
 
-## How can I edit this code?
+- **Text-Only Experience**: Strictly limited to 300 characters to encourage concise and meaningful thoughts.
+- **Monospace Aesthetics**: Designed with a terminal/hacker vibe using high-quality monospace fonts.
+- **Dim Dark Mode**: A custom "Dim" theme that's easy on the eyes, avoiding the harshness of pure black.
+- **Compact & Fast**: Built for speed with a mobile-first, border-driven minimalist UI.
+- **Social Core**: Follow/Unfollow system, Likes, Reposts, and Bookmarks.
+- **Markdown Support**: Render bold, italics, and code snippets directly within your posts.
 
-There are several ways of editing your application.
+## 🛠️ Tech Stack
 
-**Use Lovable**
+- **Frontend**: [React.js](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Backend/Auth**: [Supabase](https://supabase.com/)
+- **Deployment**: [Vercel](https://vercel.com/)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 🚀 Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+To run Syntxt locally, follow these steps:
 
-**Use your preferred IDE**
+### 1. Clone the repository
+```bash
+git clone https://github.com/raselshikdar/syntxt
+cd syntxt
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 2. Install dependencies
+```bash
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 3. Set up Environment Variables
+Create a .env file in the root directory and add your Supabase credentials:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 4. Run the development server
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📐 Design Philosophy
+Syntxt follows the "Less Noise. Raw Context." principle. Every element, from the 1px solid borders to the carefully picked character limits, is designed to keep the focus on the written word.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
+Developed with ❤️ by Rasel Shikdar
