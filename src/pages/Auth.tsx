@@ -49,7 +49,7 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        setMessage('Check your email for a verification link.');
+        navigate('/verify-email');
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -88,7 +88,7 @@ export default function Auth() {
         className="w-full max-w-sm space-y-6"
       >
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">nullset_</h1>
+          <h1 className="text-xl font-bold tracking-tight">syntxt_</h1>
           <p className="text-xs text-muted-foreground uppercase tracking-label">
             {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}
           </p>
