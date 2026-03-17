@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import ScrollToTop from "./components/ScrollToTop"; // যুক্ত করা হলো
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import SavedPosts from "./pages/SavedPosts";
@@ -60,6 +61,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop /> {/* এখানে যুক্ত করা হলো */}
           <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
