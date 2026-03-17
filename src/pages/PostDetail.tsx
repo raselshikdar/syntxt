@@ -76,6 +76,7 @@ function usePostDetail(postId: string | undefined) {
 export default function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data, isLoading } = usePostDetail(postId);
 
   return (
