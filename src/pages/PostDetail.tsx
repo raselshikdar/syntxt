@@ -107,7 +107,7 @@ export default function PostDetail() {
           <p className="text-center text-muted-foreground text-sm py-8">No replies yet.</p>
         )}
       </div>
-      <BottomNav />
+      {user ? <BottomNav /> : <GuestBottomNav />}
     </div>
   );
 }
