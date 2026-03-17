@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import ScrollToTop from "./components/ScrollToTop"; // যুক্ত করা হলো
+import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import SavedPosts from "./pages/SavedPosts";
@@ -20,6 +20,28 @@ import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+/** * HomeLanding: শুধুমাত্র ট্যাবের প্রথম ভিজিটে অটো-রিডাইরেক্ট করবে। 
+ * ট্যাব বন্ধ করলে sessionStorage মুছে যাবে, ফলে আবার নতুন করে শুরু হবে।
+ */
+function HomeLanding() {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm font-mono">Loading...</div>;
+
+  if (user) return <Index />;
+
+  // এই ট্যাবে প্রথমবার ভিজিট কি না তা চেক করা
+  const hasVisitedThisSession = sessionStorage.getItem("hasVisitedSyntxt");
+
+  if (!hasVisitedThisSession) {
+    sessionStorage.setItem("hasVisitedSyntxt", "true");
+    return <Navigate to="/welcome" replace />;
+  }
+
+  // একবার দেখা হয়ে গেলে সরাসরি গেস্ট হোমপেজ (Index)
+  return <Index />;
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -41,8 +63,10 @@ const AppRoutes = () => (
     <Route path="/auth" element={<Auth />} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/verify-email" element={<VerifyEmail />} />
-    {/* Homepage is accessible to everyone (guests get read-only) */}
-    <Route path="/" element={<Index />} />
+    
+    {/* মেইন এন্ট্রি পয়েন্ট */}
+    <Route path="/" element={<HomeLanding />} />
+    
     <Route path="/u/:handle" element={<Profile />} />
     <Route path="/post/:postId" element={<PostDetail />} />
     <Route path="/saved" element={<ProtectedRoute><SavedPosts /></ProtectedRoute>} />
@@ -61,7 +85,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <ScrollToTop /> {/* এখানে যুক্ত করা হলো */}
+          <ScrollToTop />
           <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
