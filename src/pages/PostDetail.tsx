@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -7,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
+import GuestBottomNav from '@/components/GuestBottomNav';
 import type { PostWithProfile } from '@/hooks/usePosts';
 
 function usePostDetail(postId: string | undefined) {
@@ -76,6 +76,7 @@ function usePostDetail(postId: string | undefined) {
 export default function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data, isLoading } = usePostDetail(postId);
 
   return (
@@ -106,7 +107,7 @@ export default function PostDetail() {
           <p className="text-center text-muted-foreground text-sm py-8">No replies yet.</p>
         )}
       </div>
-      <BottomNav />
+      {user ? <BottomNav /> : <GuestBottomNav />}
     </div>
   );
 }
