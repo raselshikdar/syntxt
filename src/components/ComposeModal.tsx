@@ -21,22 +21,22 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* ব্যাকড্রপ - একদম আগের মতো রাখা হয়েছে */}
+          {/* ব্যাকড্রপ - একদম আগের কোড */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
+            className="absolute inset-0 bg-foreground/20 z-40"
             onClick={onClose}
           />
           
-          {/* কম্পোজার কার্ড - এখন স্ক্রিনের মাঝখানে (Twitter Style) */}
+          {/* কম্পোজার - তোমার অরিজিনাল ডিজাইন ও চওড়া ইনটেক্ট রেখে শুধুমাত্র পজিশন সেন্টার করা হয়েছে */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="relative w-full max-w-lg bg-compose border border-border rounded-xl p-6 shadow-brutalist"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="relative z-50 bg-compose border border-border rounded-xl p-6 w-full max-w-2xl mx-auto shadow-brutalist"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs uppercase tracking-label text-muted-foreground font-semibold">New Signal</span>
@@ -44,16 +44,14 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
                 <X size={18} />
               </motion.button>
             </div>
-            
             <textarea
               value={content}
               onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
               placeholder="Broadcast your signal..."
-              className="w-full bg-transparent border border-border rounded-md p-4 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring text-foreground placeholder:text-muted-foreground min-h-[160px]"
+              className="w-full bg-transparent border border-border rounded-md p-4 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring text-foreground placeholder:text-muted-foreground min-h-[120px]"
               autoFocus
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) publish(); }}
             />
-            
             <div className="flex justify-between items-center mt-3">
               <span className={`text-xs font-mono ${remaining <= 20 ? (remaining <= 0 ? 'text-counter-danger' : 'text-counter-warning') : 'text-muted-foreground'}`}>
                 {content.length}/{MAX_CHARS}
