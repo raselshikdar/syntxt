@@ -20,23 +20,24 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* ব্যাকড্রপ - একদম আগের কোড */}
+        // items-start এবং pt-16 ব্যবহার করা হয়েছে যাতে এটি কীবোর্ডের উপরে থাকে
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
+          {/* ব্যাকড্রপ - আপনার অরিজিনাল কোড */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-foreground/20 z-40"
+            className="fixed inset-0 bg-foreground/20 z-40 backdrop-blur-sm"
             onClick={onClose}
           />
           
-          {/* কম্পোজার - তোমার অরিজিনাল ডিজাইন ও চওড়া ইনটেক্ট রেখে শুধুমাত্র পজিশন সেন্টার করা হয়েছে */}
+          {/* কম্পোজার - পজিশন কিছুটা উপরে (mt-12) সরানো হয়েছে যাতে কীবোর্ড এটাকে না ঢাকে */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative z-50 bg-compose border border-border rounded-xl p-6 w-full max-w-2xl mx-auto shadow-brutalist"
+            className="relative z-50 bg-compose border border-border rounded-xl p-6 w-full max-w-2xl mx-auto shadow-brutalist mt-12 mb-auto"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs uppercase tracking-label text-muted-foreground font-semibold">New Signal</span>
