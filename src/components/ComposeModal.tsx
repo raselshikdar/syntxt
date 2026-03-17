@@ -20,20 +20,23 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
   return (
     <AnimatePresence>
       {open && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* ব্যাকড্রপ - একদম আগের মতো রাখা হয়েছে */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/20 z-40"
+            className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
             onClick={onClose}
           />
+          
+          {/* কম্পোজার কার্ড - এখন স্ক্রিনের মাঝখানে (Twitter Style) */}
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-compose border-t border-border rounded-t-xl p-6 max-w-2xl mx-auto"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="relative w-full max-w-lg bg-compose border border-border rounded-xl p-6 shadow-brutalist"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs uppercase tracking-label text-muted-foreground font-semibold">New Signal</span>
@@ -41,14 +44,16 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
                 <X size={18} />
               </motion.button>
             </div>
+            
             <textarea
               value={content}
               onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
               placeholder="Broadcast your signal..."
-              className="w-full bg-transparent border border-border rounded-md p-4 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring text-foreground placeholder:text-muted-foreground min-h-[120px]"
+              className="w-full bg-transparent border border-border rounded-md p-4 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-ring text-foreground placeholder:text-muted-foreground min-h-[160px]"
               autoFocus
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) publish(); }}
             />
+            
             <div className="flex justify-between items-center mt-3">
               <span className={`text-xs font-mono ${remaining <= 20 ? (remaining <= 0 ? 'text-counter-danger' : 'text-counter-warning') : 'text-muted-foreground'}`}>
                 {content.length}/{MAX_CHARS}
@@ -64,7 +69,7 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">Markdown supported · Cmd+Enter to publish</p>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
