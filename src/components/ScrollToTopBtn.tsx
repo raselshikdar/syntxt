@@ -33,12 +33,9 @@ export default function ScrollToTopBtn() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           onClick={scrollToTop}
-          // z-30 জ-ইন্ডেক্স সঠিক আছে
-          // bg-background/30 backdrop-blur-md সেমি-ট্রান্সপারেন্ট আছে
-          // text-foreground ডাইনামিক আইকন কালার ঠিক আছে
           
-          // এখানে 'border border-border/40' যুক্ত করা হয়েছে খুব হালকা চিকন বর্ডারের জন্য
-          className="fixed bottom-20 left-4 w-10 h-10 bg-background/30 backdrop-blur-md border border-border/40 text-foreground rounded-full shadow-sm flex items-center justify-center z-30 transition-all hover:bg-background/60 hover:border-border/60"
+          // এখানে 'border border-border/80' ব্যবহার করা হয়েছে যাতে ডার্ক এবং লাইট মোডে বর্ডারটি পরিষ্কার বোঝা যায়
+          className="fixed bottom-20 left-4 w-10 h-10 bg-background/30 backdrop-blur-md border border-border/80 text-foreground rounded-full shadow-sm flex items-center justify-center z-30 transition-all hover:bg-background/60 hover:border-border/100"
           aria-label="Scroll up"
         >
           <ChevronUp size={20} strokeWidth={2.5} />
