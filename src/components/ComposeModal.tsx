@@ -20,24 +20,24 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
   return (
     <AnimatePresence>
       {open && (
-        // items-start এবং pt-16 ব্যবহার করা হয়েছে যাতে এটি কীবোর্ডের উপরে থাকে
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto">
+        // pb-[20vh] ব্যবহার করা হয়েছে যাতে কীবোর্ড আসলে এটি মাঝখান থেকে কিছুটা উপরে অ্যাডজাস্ট হয়
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-[20vh] sm:pb-0">
           {/* ব্যাকড্রপ - আপনার অরিজিনাল কোড */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/20 z-40 backdrop-blur-sm"
+            className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
             onClick={onClose}
           />
           
-          {/* কম্পোজার - পজিশন কিছুটা উপরে (mt-12) সরানো হয়েছে যাতে কীবোর্ড এটাকে না ঢাকে */}
+          {/* কম্পোজার - অরিজিনাল ডিজাইন ইনটেক্ট রাখা হয়েছে */}
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative z-50 bg-compose border border-border rounded-xl p-6 w-full max-w-2xl mx-auto shadow-brutalist mt-12 mb-auto"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="relative z-50 bg-compose border border-border rounded-xl p-6 w-full max-w-2xl mx-auto shadow-brutalist"
           >
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs uppercase tracking-label text-muted-foreground font-semibold">New Signal</span>
@@ -45,6 +45,7 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
                 <X size={18} />
               </motion.button>
             </div>
+            
             <textarea
               value={content}
               onChange={e => setContent(e.target.value.slice(0, MAX_CHARS))}
@@ -53,6 +54,7 @@ export default function ComposeModal({ open, onClose }: { open: boolean; onClose
               autoFocus
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) publish(); }}
             />
+            
             <div className="flex justify-between items-center mt-3">
               <span className={`text-xs font-mono ${remaining <= 20 ? (remaining <= 0 ? 'text-counter-danger' : 'text-counter-warning') : 'text-muted-foreground'}`}>
                 {content.length}/{MAX_CHARS}
