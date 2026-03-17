@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageSquare, Repeat, Bookmark, MoreHorizontal, Trash2, Copy, Share2, Flag, X } from 'lucide-react';
+import { Heart, MessageSquare, Repeat, Bookmark, MoreHorizontal, Trash2, Copy, Share2, Flag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import { usePostActions } from '@/hooks/usePostActions';
@@ -20,12 +20,12 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function ActionBtn({ icon, count, active, onClick }: { icon: React.ReactNode; count?: number; active?: boolean; onClick: () => void }) {
+function ActionBtn({ icon, count, active, onClick, disabled }: { icon: React.ReactNode; count?: number; active?: boolean; onClick: () => void; disabled?: boolean }) {
   return (
     <motion.button
       whileTap={{ scale: 0.85 }}
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`flex items-center gap-1.5 text-xs transition-colors hover:bg-action-hover rounded-sm px-2 py-1 ${active ? 'text-handle font-semibold' : 'text-muted-foreground'}`}
+      onClick={(e) => { e.stopPropagation(); if (!disabled) onClick(); }}
+      className={`flex items-center gap-1.5 text-xs transition-colors hover:bg-action-hover rounded-sm px-2 py-1 ${active ? 'text-handle font-semibold' : 'text-muted-foreground'} ${disabled ? 'opacity-50 cursor-default' : ''}`}
     >
       {icon}
       {count !== undefined && count > 0 && <span>{count}</span>}
@@ -96,6 +96,7 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
   const displayContent = isRepost ? (post.original_content ?? '') : post.content;
   const displayHandle = isRepost ? (post.original_handle ?? post.handle) : post.handle;
   const isOwn = user?.id === post.user_id;
+  const isGuest = !user;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(displayContent);
@@ -106,6 +107,14 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
     const url = `${window.location.origin}/post/${post.id}`;
     navigator.clipboard.writeText(url);
     toast.success('Link copied!');
+  };
+
+  const handleInteraction = (action: () => void) => {
+    if (isGuest) {
+      toast.info('Sign in to interact with posts.');
+      return;
+    }
+    action();
   };
 
   return (
@@ -137,11 +146,11 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
         <ReactMarkdown>{displayContent}</ReactMarkdown>
       </div>
       <div className="flex justify-between items-center pt-2 border-t border-border/50">
-        <ActionBtn icon={<Heart size={14} fill={post.liked_by_me ? 'currentColor' : 'none'} />} count={post.like_count} active={post.liked_by_me} onClick={() => toggleLike(post.id)} />
-        <ActionBtn icon={<MessageSquare size={14} />} count={post.reply_count} onClick={() => setShowComposer(!showComposer)} />
-        <ActionBtn icon={<Repeat size={14} />} count={post.repost_count} active={post.reposted_by_me} onClick={() => repost(post.id)} />
-        <ActionBtn icon={<Bookmark size={14} fill={post.saved_by_me ? 'currentColor' : 'none'} />} active={post.saved_by_me} onClick={() => toggleSave(post.id)} />
-        
+        <ActionBtn icon={<Heart size={14} fill={post.liked_by_me ? 'currentColor' : 'none'} />} count={post.like_count} active={post.liked_by_me} onClick={() => handleInteraction(() => toggleLike(post.id))} disabled={isGuest} />
+        <ActionBtn icon={<MessageSquare size={14} />} count={post.reply_count} onClick={() => handleInteraction(() => setShowComposer(!showComposer))} disabled={isGuest} />
+        <ActionBtn icon={<Repeat size={14} />} count={post.repost_count} active={post.reposted_by_me} onClick={() => handleInteraction(() => repost(post.id))} disabled={isGuest} />
+        <ActionBtn icon={<Bookmark size={14} fill={post.saved_by_me ? 'currentColor' : 'none'} />} active={post.saved_by_me} onClick={() => handleInteraction(() => toggleSave(post.id))} disabled={isGuest} />
+
         <Popover>
           <PopoverTrigger asChild>
             <motion.button
@@ -164,7 +173,7 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
             <button onClick={handleShare} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-accent rounded-sm">
               <Share2 size={13} /> Share Link
             </button>
-            {!isOwn && (
+            {!isOwn && !isGuest && (
               <button onClick={() => toast.info('Report submitted.')} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-destructive hover:bg-accent rounded-sm">
                 <Flag size={13} /> Report
               </button>
@@ -173,7 +182,7 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
         </Popover>
       </div>
       <AnimatePresence>
-        {showComposer && <CommentComposer postId={post.id} onClose={() => setShowComposer(false)} />}
+        {showComposer && !isGuest && <CommentComposer postId={post.id} onClose={() => setShowComposer(false)} />}
       </AnimatePresence>
     </motion.div>
   );

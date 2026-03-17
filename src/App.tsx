@@ -11,6 +11,7 @@ import Search from "./pages/Search";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Welcome from "./pages/Welcome";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
@@ -22,23 +23,32 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm font-mono">Loading...</div>;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/welcome" replace />;
+  return <>{children}</>;
+}
+
+function GuestOrAuth({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm font-mono">Loading...</div>;
+  if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
 const AppRoutes = () => (
   <Routes>
+    <Route path="/welcome" element={<GuestOrAuth><Welcome /></GuestOrAuth>} />
     <Route path="/auth" element={<Auth />} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/verify-email" element={<VerifyEmail />} />
-    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-    <Route path="/u/:handle" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+    {/* Homepage is accessible to everyone (guests get read-only) */}
+    <Route path="/" element={<Index />} />
+    <Route path="/u/:handle" element={<Profile />} />
+    <Route path="/post/:postId" element={<PostDetail />} />
     <Route path="/saved" element={<ProtectedRoute><SavedPosts /></ProtectedRoute>} />
     <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-    <Route path="/post/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

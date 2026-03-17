@@ -1,11 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Heart, Repeat, UserPlus } from 'lucide-react';
+import { Heart, Repeat, UserPlus, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUnreadCount } from '@/hooks/useNotifications';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
+import { useEffect } from 'react';
 
 interface Notification {
   id: string;
@@ -30,7 +32,7 @@ const iconMap: Record<string, React.ReactNode> = {
   like: <Heart size={14} className="text-handle" />,
   repost: <Repeat size={14} className="text-handle" />,
   follow: <UserPlus size={14} className="text-handle" />,
-  reply: <Heart size={14} className="text-handle" />,
+  reply: <MessageSquare size={14} className="text-handle" />,
 };
 
 const labelMap: Record<string, string> = {
@@ -44,6 +46,7 @@ export default function Notifications() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { resetCount } = useUnreadCount();
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -65,6 +68,7 @@ export default function Notifications() {
       const unreadIds = data.filter(n => !n.read).map(n => n.id);
       if (unreadIds.length > 0) {
         await supabase.from('notifications').update({ read: true }).in('id', unreadIds);
+        resetCount();
       }
 
       return data.map(n => ({
@@ -96,7 +100,10 @@ export default function Notifications() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 }}
-                onClick={() => n.type === 'follow' ? navigate(`/u/${n.actor_handle}`) : undefined}
+                onClick={() => {
+                  if (n.type === 'follow') navigate(`/u/${n.actor_handle}`);
+                  else if (n.post_id) navigate(`/post/${n.post_id}`);
+                }}
                 className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-accent transition-colors ${!n.read ? 'bg-accent/50' : ''}`}
               >
                 {iconMap[n.type]}

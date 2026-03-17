@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, LogOut, Moon, Sun, Camera } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, Sun, Camera, ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,34 +11,38 @@ import { toast } from 'sonner';
 export default function Settings() {
   const navigate = useNavigate();
   const { profile, signOut, user } = useAuth();
+  const [fullName, setFullName] = useState((profile as any)?.full_name ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
-  const [handle, setHandle] = useState(profile?.handle ?? '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  const avatarUrl = (profile as any)?.avatar_url
-    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${(profile as any).avatar_url}`
+  const avatarUrl = profile?.avatar_url
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
+    : null;
+
+  const bannerUrl = (profile as any)?.banner_url
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/banners/${(profile as any).banner_url}`
     : null;
 
   const toggleDark = () => {
     document.documentElement.classList.toggle('dark');
     setDarkMode(!darkMode);
+    localStorage.setItem('theme', !darkMode ? 'dark' : 'light');
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    
+  const uploadImage = async (file: File, bucket: string, pathPrefix: string, field: string) => {
+    if (!user) return;
     setUploading(true);
     const ext = file.name.split('.').pop();
-    const path = `${user.id}/avatar.${ext}`;
-    
+    const path = `${user.id}/${pathPrefix}.${ext}`;
+
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from(bucket)
       .upload(path, file, { upsert: true });
-    
+
     if (uploadError) {
       toast.error('Upload failed: ' + uploadError.message);
       setUploading(false);
@@ -47,20 +51,19 @@ export default function Settings() {
 
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar_url: path } as any)
+      .update({ [field]: path } as any)
       .eq('user_id', user.id);
 
     if (updateError) toast.error(updateError.message);
-    else toast.success('Avatar updated!');
+    else toast.success('Image updated!');
     setUploading(false);
-    // Refresh page to show new avatar
     window.location.reload();
   };
 
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from('profiles').update({ bio, handle }).eq('user_id', user.id);
+    const { error } = await supabase.from('profiles').update({ bio, full_name: fullName } as any).eq('user_id', user.id);
     if (error) toast.error(error.message);
     else toast.success('Profile updated!');
     setSaving(false);
@@ -68,7 +71,7 @@ export default function Settings() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/welcome');
   };
 
   return (
@@ -83,37 +86,55 @@ export default function Settings() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
-        {/* Avatar Section */}
-        <div className="border border-border rounded-md p-5 bg-card space-y-4">
-          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold">Avatar</h3>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-16 w-16">
-                {avatarUrl ? <AvatarImage src={avatarUrl} alt={profile?.handle} /> : null}
-                <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
-                  {profile?.handle?.slice(0, 2).toUpperCase() ?? '??'}
-                </AvatarFallback>
-              </Avatar>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="absolute -bottom-1 -right-1 bg-fab text-fab-foreground rounded-full p-1.5"
-              >
-                <Camera size={12} />
-              </motion.button>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <p>Click the camera icon to upload a new photo.</p>
-              <p className="mt-1">Max 2MB, JPG or PNG.</p>
-            </div>
+        {/* Banner & Avatar Section */}
+        <div className="border border-border rounded-md bg-card overflow-hidden">
+          <div className="relative h-24 bg-gradient-to-r from-muted to-accent">
+            {bannerUrl && (
+              <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+            )}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => bannerInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute bottom-2 right-2 bg-card/80 backdrop-blur-sm rounded-full p-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <ImageIcon size={14} />
+            </motion.button>
             <input
-              ref={fileInputRef}
+              ref={bannerInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              onChange={handleAvatarUpload}
+              onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(f, 'banners', 'banner', 'banner_url'); }}
               className="hidden"
             />
+          </div>
+          <div className="px-5 pb-5">
+            <div className="flex items-end -mt-8">
+              <div className="relative">
+                <Avatar className="h-16 w-16 border-4 border-card">
+                  {avatarUrl ? <AvatarImage src={avatarUrl} alt={profile?.handle} /> : null}
+                  <AvatarFallback className="text-lg font-bold bg-muted text-muted-foreground">
+                    {profile?.handle?.slice(0, 2).toUpperCase() ?? '??'}
+                  </AvatarFallback>
+                </Avatar>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploading}
+                  className="absolute -bottom-1 -right-1 bg-fab text-fab-foreground rounded-full p-1.5"
+                >
+                  <Camera size={12} />
+                </motion.button>
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(f, 'avatars', 'avatar', 'avatar_url'); }}
+                className="hidden"
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-3">Click icons to update avatar or banner image.</p>
           </div>
         </div>
 
@@ -123,12 +144,19 @@ export default function Settings() {
           <div className="space-y-3">
             <div>
               <label className="text-xs text-muted-foreground">Handle</label>
+              <div className="w-full bg-muted border border-border rounded-md px-3 py-2 text-sm font-mono text-muted-foreground mt-1 cursor-not-allowed">
+                @{profile?.handle}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Full Name</label>
               <input
                 type="text"
-                value={handle}
-                onChange={e => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
                 className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-ring mt-1"
-                maxLength={20}
+                maxLength={50}
+                placeholder="Your full name"
               />
             </div>
             <div>

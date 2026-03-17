@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
+import GuestBottomNav from '@/components/GuestBottomNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts } from '@/hooks/usePosts';
@@ -34,6 +35,10 @@ export default function Profile() {
     ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
     : null;
 
+  const bannerUrl = (profile as any)?.banner_url
+    ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/banners/${(profile as any).banner_url}`
+    : null;
+
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
@@ -43,6 +48,7 @@ export default function Profile() {
   }
 
   const joinDate = new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const fullName = (profile as any)?.full_name;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -56,13 +62,14 @@ export default function Profile() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
-        {/* Profile Header */}
         <div className="border border-border rounded-md bg-card overflow-hidden">
-          {/* Banner area */}
-          <div className="h-20 bg-gradient-to-r from-muted to-accent" />
-          
+          <div className="h-24 bg-gradient-to-r from-muted to-accent">
+            {bannerUrl && (
+              <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+            )}
+          </div>
+
           <div className="px-5 pb-5">
-            {/* Avatar overlapping banner */}
             <div className="flex items-end justify-between -mt-10">
               <Avatar className="h-20 w-20 border-4 border-card">
                 {avatarUrl ? (
@@ -72,7 +79,7 @@ export default function Profile() {
                   {profile.handle.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="mt-12">
                 {!isOwn && user ? (
                   <motion.button
@@ -98,19 +105,18 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Info */}
-            <div className="mt-4 space-y-2">
-              <h2 className="text-lg font-bold text-handle">@{profile.handle}</h2>
+            <div className="mt-4 space-y-1">
+              {fullName && <h2 className="text-base font-bold">{fullName}</h2>}
+              <p className="text-sm text-handle font-semibold">@{profile.handle}</p>
               {profile.bio && (
-                <p className="text-sm text-card-foreground leading-relaxed">{profile.bio}</p>
+                <p className="text-sm text-card-foreground leading-relaxed pt-1">{profile.bio}</p>
               )}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
                 <Calendar size={12} />
                 <span>Joined {joinDate}</span>
               </div>
             </div>
 
-            {/* Stats */}
             <div className="flex gap-5 mt-4 pt-3 border-t border-border/50">
               <span className="text-xs text-muted-foreground">
                 <strong className="text-foreground font-bold">{counts.followers}</strong> followers
@@ -125,7 +131,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Posts */}
         <div className="space-y-4">
           <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
           {userPosts.length === 0 ? (
@@ -135,7 +140,7 @@ export default function Profile() {
           )}
         </div>
       </div>
-      <BottomNav />
+      {user ? <BottomNav /> : <GuestBottomNav />}
     </div>
   );
 }
