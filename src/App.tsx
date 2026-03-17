@@ -21,18 +21,11 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// হোমপেজের জন্য স্মার্ট গেটওয়ে লজিক
-function HomeGateway() {
+/** Root route: authenticated → Index feed, unauthenticated → Welcome page */
+function RootRoute() {
   const { user, loading } = useAuth();
-  
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm font-mono">Loading...</div>;
-  
-  // ইউজার লগইন করা না থাকলে তাকে /welcome পেজে পাঠানো হবে
-  if (!user) {
-    return <Navigate to="/welcome" replace />;
-  }
-  
-  // ইউজার লগইন করা থাকলে তাকে মূল হোমপেজ (Index) দেখানো হবে
+  if (!user) return <Welcome />;
   return <Index />;
 }
 
@@ -56,10 +49,8 @@ const AppRoutes = () => (
     <Route path="/auth" element={<Auth />} />
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/verify-email" element={<VerifyEmail />} />
-    
-    {/* মেইন হোমপেজ রুট এখন HomeGateway ব্যবহার করবে */}
-    <Route path="/" element={<HomeGateway />} />
-    
+    {/* মেইন রুট এখন RootRoute লজিক ব্যবহার করবে */}
+    <Route path="/" element={<RootRoute />} />
     <Route path="/u/:handle" element={<Profile />} />
     <Route path="/post/:postId" element={<PostDetail />} />
     <Route path="/saved" element={<ProtectedRoute><SavedPosts /></ProtectedRoute>} />
