@@ -8,34 +8,37 @@ export default function Header() {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   
-  const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  // ১. সরাসরি রিয়েল-টাইম চেক করে স্টেট সেট করা
+  const [darkMode, setDarkMode] = useState(() => {
+    // এটি রেন্ডারিং এর আগেই এক্সিকিউট হবে
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) return savedTheme === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // অটো ডিভাইস প্রিফারেন্স লজিক
+  // ২. থিম অ্যাপ্লাই করার জন্য একটি ডেডিকেটেড ইফেক্ট
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    // যদি ইউজার আগে কখনো ম্যানুয়ালি সেট না করে থাকে (প্রথমবার ভিজিট)
-    if (!savedTheme) {
-      if (systemPrefersDark) {
-        document.documentElement.classList.add('dark');
-        setDarkMode(true);
-      } else {
-        document.documentElement.classList.remove('dark');
-        setDarkMode(false);
-      }
+    const root = window.document.documentElement;
+    if (darkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, []);
+  }, [darkMode]);
 
   const toggleDark = () => {
-    const isDark = document.documentElement.classList.toggle('dark');
-    setDarkMode(isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
   };
 
-  // স্ক্রল ট্র্যাকিং লজিক
+  // ৩. স্ক্রল ট্র্যাকিং (আপনার অরিজিনাল লজিক)
   useEffect(() => {
     const controlNavbar = () => {
       if (typeof window !== 'undefined') {
@@ -49,9 +52,7 @@ export default function Header() {
     };
 
     window.addEventListener('scroll', controlNavbar);
-    return () => {
-      window.removeEventListener('scroll', controlNavbar);
-    };
+    return () => window.removeEventListener('scroll', controlNavbar);
   }, [lastScrollY]);
 
   return (
@@ -101,7 +102,6 @@ export default function Header() {
             </span>
           ) : null}
         </div>
-
       </div>
     </header>
   );
