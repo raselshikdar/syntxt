@@ -20,14 +20,13 @@ function usePostDetail(postId: string | undefined) {
       const { data: postRow } = await supabase.from('posts').select('*').eq('id', postId).single();
       if (!postRow) return { post: null, replies: [], parentPosts: [] };
 
-      // ২. প্যারেন্ট চেইন খুঁজে বের করা (মেইন পোস্ট সবসময় উপরে রাখার জন্য)
-      let parentPosts: any[] = [];
+      // ২. প্যারেন্ট চেইন খুঁজে বের করা (মেইন পোস্ট সবসময় উপরে রাখার লজিক)
+      let parentRows: any[] = [];
       let currentParentId = postRow.reply_to;
-      
       while (currentParentId) {
         const { data: parent } = await supabase.from('posts').select('*').eq('id', currentParentId).single();
         if (parent) {
-          parentPosts.unshift(parent); // অ্যারের শুরুতে যোগ করা যাতে ক্রম ঠিক থাকে
+          parentRows.unshift(parent);
           currentParentId = parent.reply_to;
         } else {
           currentParentId = null;
@@ -35,14 +34,11 @@ function usePostDetail(postId: string | undefined) {
       }
 
       // ৩. রিপ্লাইগুলো ফেচ করা
-      const { data: replies } = await supabase.from('posts')
-        .select('*')
-        .eq('reply_to', postId)
-        .order('created_at', { ascending: true });
+      const { data: replies } = await supabase.from('posts').select('*').eq('reply_to', postId).order('created_at', { ascending: true });
 
-      // ৪. রিপোস্টের ক্ষেত্রে অরিজিনাল পোস্টগুলো ফেচ করা
-      const allFetchedRows = [postRow, ...parentPosts, ...(replies ?? [])];
-      const repostIds = allFetchedRows.filter(p => p.repost_of).map(p => p.repost_of);
+      // ৪. অরিজিনাল পোস্ট (রিপোস্টের জন্য) খুঁজে বের করা
+      const allRows = [postRow, ...parentRows, ...(replies ?? [])];
+      const repostIds = allRows.filter(p => p.repost_of).map(p => p.repost_of);
       
       let originalPostsMap = new Map();
       if (repostIds.length > 0) {
@@ -50,15 +46,16 @@ function usePostDetail(postId: string | undefined) {
         originals?.forEach(op => originalPostsMap.set(op.id, op));
       }
 
-      // ৫. প্রোফাইল এবং লাইক/সেভ ডাটা প্রসেসিং (আপনার অরিজিনাল লজিক অক্ষত)
-      const userIds = [...new Set([...allFetchedRows.map(p => p.user_id), ...Array.from(originalPostsMap.values()).map(p => p.user_id)])];
-      const { data: profiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', userIds);
+      // ৫. প্রোফাইল হ্যান্ডেল ম্যাপ করা (অরিজিনাল পোস্টের প্রোফাইলসহ)
+      const allUserIds = [...new Set([...allRows.map(p => p.user_id), ...Array.from(originalPostsMap.values()).map(p => p.user_id)])];
+      const { data: profiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', allUserIds);
       const profileMap = new Map(profiles?.map(p => [p.user_id, p.handle]) ?? []);
 
-      const postIds = [...allFetchedRows.map(p => p.id), ...repostIds];
-      const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', postIds);
-      const { data: saves } = user ? await supabase.from('saves').select('post_id').eq('user_id', user.id).in('post_id', postIds) : { data: [] };
-      const { data: replyCounts } = await supabase.from('posts').select('reply_to').in('reply_to', postIds);
+      // ৬. লাইক, সেভ এবং রিপ্লাই কাউন্ট প্রসেসিং
+      const allIdsForMeta = [...allRows.map(p => p.id), ...repostIds];
+      const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', allIdsForMeta);
+      const { data: saves } = user ? await supabase.from('saves').select('post_id').eq('user_id', user.id).in('post_id', allIdsForMeta) : { data: [] };
+      const { data: replyCounts } = await supabase.from('posts').select('reply_to').in('reply_to', allIdsForMeta);
 
       const likesByPost = new Map<string, string[]>();
       likes?.forEach(l => {
@@ -72,6 +69,7 @@ function usePostDetail(postId: string | undefined) {
         if (r.reply_to) replyCountMap.set(r.reply_to, (replyCountMap.get(r.reply_to) ?? 0) + 1);
       });
 
+      // ৭. mapPost ফাংশন: যা PostCard এর ডাটা ফরম্যাট অনুযায়ী তৈরি
       const mapPost = (p: any): PostWithProfile => {
         const postLikes = likesByPost.get(p.id) ?? [];
         const originalPostData = p.repost_of ? originalPostsMap.get(p.repost_of) : null;
@@ -90,18 +88,16 @@ function usePostDetail(postId: string | undefined) {
           liked_by_me: user ? postLikes.includes(user.id) : false,
           saved_by_me: savedSet.has(p.id),
           reposted_by_me: false,
-          // PostCard-এর জন্য অরিজিনাল পোস্ট ডাটা পাঠানো হচ্ছে
-          original_post: originalPostData ? {
-            ...originalPostData,
-            handle: profileMap.get(originalPostData.user_id) ?? 'unknown'
-          } : undefined
-        } as PostWithProfile;
+          // PostCard এই ফিল্ডগুলো খোঁজে রিপোস্ট দেখানোর জন্য
+          original_content: originalPostData ? originalPostData.content : undefined,
+          original_handle: originalPostData ? (profileMap.get(originalPostData.user_id) ?? 'unknown') : undefined
+        };
       };
 
       return {
         post: mapPost(postRow),
         replies: (replies ?? []).map(mapPost),
-        parentPosts: parentPosts.map(mapPost)
+        parentPosts: parentRows.map(mapPost)
       };
     },
     enabled: !!postId,
@@ -128,21 +124,21 @@ export default function PostDetail() {
       <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
         {isLoading && <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>}
         
-        {/* সবার উপরে প্যারেন্ট বা মেইন পোস্টগুলো দেখাবে */}
+        {/* মেইন পোস্ট চেইন (সবার উপরে মেইন পোস্ট দেখানোর জন্য) */}
         {data?.parentPosts.map((p) => (
-          <div key={p.id} className="opacity-80 scale-[0.98]">
+          <div key={p.id}>
             <PostCard post={p} />
-            <div className="h-4 w-px bg-border ml-6 my-1" /> {/* থ্রেড লাইন */}
+            <div className="h-4 w-px bg-border ml-7 my-1" /> {/* থ্রেড কানেক্টর লাইন */}
           </div>
         ))}
 
-        {/* বর্তমান টার্গেটেড পোস্ট */}
+        {/* বর্তমান পোস্ট/কমেন্ট */}
         {data?.post && <PostCard post={data.post} />}
 
-        {/* রিপ্লাই সেকশন */}
+        {/* রিপ্লাই লিস্ট */}
         {data && data.replies.length > 0 && (
           <>
-            <div className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1 pt-4">
+            <div className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1 pt-4 border-t border-border/50">
               {data.replies.length} {data.replies.length === 1 ? 'Reply' : 'Replies'}
             </div>
             {data.replies.map((reply, i) => (
@@ -150,7 +146,7 @@ export default function PostDetail() {
             ))}
           </>
         )}
-        
+
         {data && data.replies.length === 0 && data.post && (
           <p className="text-center text-muted-foreground text-sm py-8">No replies yet.</p>
         )}
