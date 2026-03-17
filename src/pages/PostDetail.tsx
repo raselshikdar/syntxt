@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
+import GuestBottomNav from '@/components/GuestBottomNav';
 import type { PostWithProfile } from '@/hooks/usePosts';
 
 function usePostDetail(postId: string | undefined) {
