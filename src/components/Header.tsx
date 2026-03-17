@@ -1,33 +1,47 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun } from 'lucide-react'; // আইকন যুক্ত করা হলো
-import { motion, AnimatePresence } from 'framer-motion';
+import { Moon, Sun } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Header() {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   
-  // ডার্ক মোড স্টেট এবং লজিক (Settings.tsx থেকে নেওয়া)
   const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
-  
-  // স্মার্ট স্ক্রল হাইড স্টেট
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  // অটো ডিভাইস প্রিফারেন্স লজিক
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // যদি ইউজার আগে কখনো ম্যানুয়ালি সেট না করে থাকে (প্রথমবার ভিজিট)
+    if (!savedTheme) {
+      if (systemPrefersDark) {
+        document.documentElement.classList.add('dark');
+        setDarkMode(true);
+      } else {
+        document.documentElement.classList.remove('dark');
+        setDarkMode(false);
+      }
+    }
+  }, []);
+
   const toggleDark = () => {
-    document.documentElement.classList.toggle('dark');
-    setDarkMode(!darkMode);
-    localStorage.setItem('theme', !darkMode ? 'dark' : 'light');
+    const isDark = document.documentElement.classList.toggle('dark');
+    setDarkMode(isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   };
 
   // স্ক্রল ট্র্যাকিং লজিক
   useEffect(() => {
     const controlNavbar = () => {
       if (typeof window !== 'undefined') {
-        if (window.scrollY > lastScrollY && window.scrollY > 80) { // নিচে স্ক্রল করলে হাইড হবে
+        if (window.scrollY > lastScrollY && window.scrollY > 80) {
           setIsVisible(false);
-        } else { // উপরে স্ক্রল করলে শো হবে
+        } else {
           setIsVisible(true);
         }
         setLastScrollY(window.scrollY);
