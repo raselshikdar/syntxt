@@ -50,7 +50,10 @@ export default function ScrollToTopBtn() {
           }}
           whileTap={{ scale: 0.92 }}
           onClick={scrollToTop}
-          className="fixed bottom-20 left-4 w-10 h-10 bg-background/30 backdrop-blur-md border border-border/80 text-foreground rounded-full shadow-sm flex items-center justify-center z-30 transition-colors hover:bg-background/60"
+          
+          // বর্ডারকে আরও উজ্জ্বল করার জন্য 'border-current/80' ব্যবহার করা হয়েছে
+          // এটি ডার্ক মোডে সাদা (text-foreground) কালার ব্যবহার করবে বর্ডারের জন্য
+          className="fixed bottom-20 left-4 w-10 h-10 bg-background/30 backdrop-blur-md border border-current/80 text-foreground rounded-full shadow-sm flex items-center justify-center z-30 transition-colors hover:bg-background/60 hover:border-current/100"
           aria-label="Scroll up"
         >
           <ChevronUp size={20} strokeWidth={2.5} />
