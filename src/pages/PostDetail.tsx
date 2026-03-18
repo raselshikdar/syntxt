@@ -12,8 +12,7 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 function usePostDetail(postId: string | undefined) { 
   const { user } = useAuth(); 
   return useQuery({ 
-    // হুকের invalidate লজিকের সাথে মিল রেখে 'post-detail' এবং আলাদা করার জন্য postId ব্যবহার করা হয়েছে
-    queryKey: ['post-detail', postId], 
+    queryKey: ['post-detail', postId, user?.id], 
     queryFn: async (): Promise<{ post: PostWithProfile | null; replies: PostWithProfile[]; parentPosts: PostWithProfile[] }> => { 
       if (!postId) return { post: null, replies: [], parentPosts: [] }; 
 
@@ -48,12 +47,25 @@ function usePostDetail(postId: string | undefined) {
       const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', postIds); 
       const { data: saves } = user ? await supabase.from('saves').select('post_id').eq('user_id', user.id).in('post_id', postIds) : { data: [] }; 
 
+      // রিপোস্ট এবং ইন্টারঅ্যাকশন লজিক যুক্ত করা হয়েছে (ভিজুয়ালি অদৃশ্য)
+      const { data: allReposts } = await supabase.from('posts').select('id, repost_of, user_id').in('repost_of', postIds);
+      
       const likesByPost = new Map<string, string[]>(); 
       likes?.forEach(l => { 
         const arr = likesByPost.get(l.post_id) ?? []; 
         arr.push(l.user_id); 
         likesByPost.set(l.post_id, arr); 
       }); 
+
+      const repostCountMap = new Map<string, number>();
+      const repostedByMeSet = new Set<string>();
+      allReposts?.forEach(r => {
+        if (r.repost_of) {
+          repostCountMap.set(r.repost_of, (repostCountMap.get(r.repost_of) ?? 0) + 1);
+          if (user && r.user_id === user.id) repostedByMeSet.add(r.repost_of);
+        }
+      });
+
       const savedSet = new Set(saves?.map(s => s.post_id) ?? []); 
 
       const { data: replyCounts } = await supabase.from('posts').select('reply_to').in('reply_to', postIds); 
@@ -75,11 +87,11 @@ function usePostDetail(postId: string | undefined) {
           handle: profileMap.get(p.user_id) ?? 'unknown', 
           image_url: p.image_url ?? null, 
           like_count: postLikes.length, 
-          repost_count: 0, 
+          repost_count: repostCountMap.get(p.id) ?? 0, 
           reply_count: replyCountMap.get(p.id) ?? 0, 
           liked_by_me: user ? postLikes.includes(user.id) : false, 
           saved_by_me: savedSet.has(p.id), 
-          reposted_by_me: false, 
+          reposted_by_me: repostedByMeSet.has(p.id), 
           original_content: originalData ? originalData.content : undefined, 
           original_handle: originalData ? (profileMap.get(originalData.user_id) ?? 'unknown') : undefined 
         }; 
@@ -92,9 +104,6 @@ function usePostDetail(postId: string | undefined) {
       }; 
     }, 
     enabled: !!postId, 
-    // ক্যাশ ক্লিয়ার করতে সাহায্য করবে
-    staleTime: 0,
-    gcTime: 0
   }); 
 } 
 
