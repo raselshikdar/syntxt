@@ -12,8 +12,8 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 function usePostDetail(postId: string | undefined) { 
   const { user } = useAuth(); 
   return useQuery({ 
-    // হুকের লজিক অনুযায়ী Key পরিবর্তন করা হয়েছে যাতে বাটনগুলো কাজ করে
-    queryKey: ['post-detail'], 
+    // হুকের invalidate লজিকের সাথে মিল রেখে 'post-detail' এবং আলাদা করার জন্য postId ব্যবহার করা হয়েছে
+    queryKey: ['post-detail', postId], 
     queryFn: async (): Promise<{ post: PostWithProfile | null; replies: PostWithProfile[]; parentPosts: PostWithProfile[] }> => { 
       if (!postId) return { post: null, replies: [], parentPosts: [] }; 
 
@@ -92,6 +92,9 @@ function usePostDetail(postId: string | undefined) {
       }; 
     }, 
     enabled: !!postId, 
+    // ক্যাশ ক্লিয়ার করতে সাহায্য করবে
+    staleTime: 0,
+    gcTime: 0
   }); 
 } 
 
