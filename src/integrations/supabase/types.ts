@@ -107,6 +107,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           reply_to: string | null
           repost_of: string | null
           updated_at: string
@@ -116,6 +117,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           reply_to?: string | null
           repost_of?: string | null
           updated_at?: string
@@ -125,6 +127,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           reply_to?: string | null
           repost_of?: string | null
           updated_at?: string
@@ -183,6 +186,44 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reason: string | null
+          reporter_id: string
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reason?: string | null
+          reporter_id: string
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reason?: string | null
+          reporter_id?: string
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saves: {
         Row: {
           created_at: string
@@ -211,6 +252,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_restrictions: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          reason: string | null
+          restriction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          restriction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          restriction_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

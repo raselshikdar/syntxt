@@ -27,7 +27,6 @@ export function usePostActions() {
 
   const toggleLike = async (postId: string) => {
     if (!user) return;
-    // Optimistic: check current state from cache
     const posts = qc.getQueryData<PostWithProfile[]>(['posts', user.id]);
     const current = posts?.find(p => p.id === postId);
     const wasLiked = current?.liked_by_me ?? false;
@@ -50,7 +49,6 @@ export function usePostActions() {
         }
       }
     } catch {
-      // Revert on error
       optimisticUpdate(postId, p => ({
         ...p,
         liked_by_me: wasLiked,
@@ -72,8 +70,10 @@ export function usePostActions() {
       if (wasSaved) {
         const { data: existing } = await supabase.from('saves').select('id').eq('user_id', user.id).eq('post_id', postId).maybeSingle();
         if (existing) await supabase.from('saves').delete().eq('id', existing.id);
+        toast.success('Bookmark removed');
       } else {
         await supabase.from('saves').insert({ user_id: user.id, post_id: postId });
+        toast.success('Bookmark added');
       }
     } catch {
       optimisticUpdate(postId, p => ({ ...p, saved_by_me: wasSaved }));
@@ -97,9 +97,11 @@ export function usePostActions() {
     invalidate();
   };
 
-  const addPost = async (content: string) => {
+  const addPost = async (content: string, imageUrl?: string) => {
     if (!user) return;
-    const { error } = await supabase.from('posts').insert({ user_id: user.id, content });
+    const insertData: any = { user_id: user.id, content };
+    if (imageUrl) insertData.image_url = imageUrl;
+    const { error } = await supabase.from('posts').insert(insertData);
     if (error) { toast.error(error.message); return; }
     invalidate();
     toast.success('Published!');
@@ -107,7 +109,6 @@ export function usePostActions() {
 
   const addReply = async (postId: string, content: string) => {
     if (!user) return;
-    // Optimistic reply count
     optimisticUpdate(postId, p => ({ ...p, reply_count: p.reply_count + 1 }));
     const { error } = await supabase.from('posts').insert({ user_id: user.id, content, reply_to: postId });
     if (error) {
@@ -115,9 +116,14 @@ export function usePostActions() {
       optimisticUpdate(postId, p => ({ ...p, reply_count: p.reply_count - 1 }));
       return;
     }
-    const { data: post } = await supabase.from('posts').select('user_id').eq('id', postId).single();
-    if (post && post.user_id !== user.id) {
-      await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: user.id, type: 'reply', post_id: postId });
+    // Send notification for reply
+    try {
+      const { data: post } = await supabase.from('posts').select('user_id').eq('id', postId).single();
+      if (post && post.user_id !== user.id) {
+        await supabase.from('notifications').insert({ user_id: post.user_id, actor_id: user.id, type: 'reply', post_id: postId });
+      }
+    } catch (e) {
+      console.error('Failed to send reply notification:', e);
     }
     invalidate();
     toast.success('Reply posted!');
@@ -131,5 +137,16 @@ export function usePostActions() {
     toast.success('Post deleted.');
   };
 
-  return { toggleLike, toggleSave, repost, addPost, addReply, deletePost };
+  const reportPost = async (postId: string, reason: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: user.id,
+      post_id: postId,
+      reason,
+    } as any);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Report submitted. We will review it shortly.');
+  };
+
+  return { toggleLike, toggleSave, repost, addPost, addReply, deletePost, reportPost };
 }

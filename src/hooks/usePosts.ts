@@ -10,6 +10,7 @@ export interface PostWithProfile {
   reply_to: string | null;
   created_at: string;
   handle: string;
+  image_url: string | null;
   like_count: number;
   repost_count: number;
   reply_count: number;
@@ -21,10 +22,9 @@ export interface PostWithProfile {
 }
 
 async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]> {
-  // Fetch top-level posts (not replies)
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('id, user_id, content, repost_of, reply_to, created_at')
+    .select('id, user_id, content, repost_of, reply_to, created_at, image_url')
     .is('reply_to', null)
     .order('created_at', { ascending: false })
     .limit(100);
@@ -41,14 +41,12 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
     ? await supabase.from('saves').select('post_id').eq('user_id', userId).in('post_id', postIds)
     : { data: [] };
 
-  // Count replies per post
   const { data: replyCounts } = await supabase.from('posts').select('reply_to').in('reply_to', postIds);
   const replyCountMap = new Map<string, number>();
   replyCounts?.forEach(r => {
     if (r.reply_to) replyCountMap.set(r.reply_to, (replyCountMap.get(r.reply_to) ?? 0) + 1);
   });
 
-  // For reposts, fetch original posts
   const repostIds = posts.filter(p => p.repost_of).map(p => p.repost_of!);
   let originalMap = new Map<string, { content: string; user_id: string }>();
   if (repostIds.length > 0) {
@@ -81,6 +79,7 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
     const original = p.repost_of ? originalMap.get(p.repost_of) : null;
     return {
       ...p,
+      image_url: (p as any).image_url ?? null,
       handle: profileMap.get(p.user_id) ?? 'unknown',
       like_count: postLikes.length,
       repost_count: repostCountMap.get(p.id) ?? 0,

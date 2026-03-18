@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, LogOut, Moon, Sun, Camera, ImageIcon } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, Sun, Camera, ImageIcon, HelpCircle, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,8 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [supportMessage, setSupportMessage] = useState('');
+  const [sendingSupport, setSendingSupport] = useState(false);
 
   const avatarUrl = profile?.avatar_url
     ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
@@ -72,6 +74,25 @@ export default function Settings() {
   const handleSignOut = async () => {
     await signOut();
     navigate('/welcome');
+  };
+
+  const handleSupportSubmit = async () => {
+    if (!supportMessage.trim() || !user) return;
+    setSendingSupport(true);
+    // Store support message as a report with special type
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: user.id,
+      post_id: null as any,
+      reason: `[SUPPORT] ${supportMessage.trim()}`,
+      status: 'pending',
+    } as any);
+    if (error) {
+      toast.error('Failed to send. Please try again.');
+    } else {
+      toast.success('Support message sent! We will get back to you.');
+      setSupportMessage('');
+    }
+    setSendingSupport(false);
   };
 
   return (
@@ -188,6 +209,30 @@ export default function Settings() {
           >
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
             {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          </motion.button>
+        </div>
+
+        {/* Support Section */}
+        <div className="border border-border rounded-md p-5 bg-card space-y-4">
+          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold flex items-center gap-1.5">
+            <HelpCircle size={14} /> Support
+          </h3>
+          <p className="text-xs text-muted-foreground">Having an issue or need help? Send us a message.</p>
+          <textarea
+            value={supportMessage}
+            onChange={e => setSupportMessage(e.target.value)}
+            placeholder="Describe your issue..."
+            className="w-full bg-background border border-border rounded-md p-3 text-sm font-mono resize-none h-20 focus:outline-none focus:ring-1 focus:ring-ring"
+            maxLength={1000}
+          />
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSupportSubmit}
+            disabled={sendingSupport || !supportMessage.trim()}
+            className="flex items-center gap-2 bg-fab text-fab-foreground px-5 py-2 rounded-md text-xs font-semibold uppercase tracking-label disabled:opacity-50"
+          >
+            <Send size={12} />
+            {sendingSupport ? 'Sending...' : 'Send Message'}
           </motion.button>
         </div>
 
