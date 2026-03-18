@@ -130,11 +130,11 @@ export default function Admin() {
           reporter_handle: reporterMap.get(r.reporter_id) ?? 'unknown',
           post_id: r.post_id,
           post_content: post?.content ?? '[deleted]',
-          post_handle: post ? (postHandleMap.get(post.user_id) ?? 'unknown') : 'unknown',
+          post_handle: post ? (postHandleMap.get(post.user_id) ?? 'unknown') as string : 'unknown',
           reason: r.reason ?? '',
           status: r.status,
           created_at: r.created_at,
-        };
+        } as ReportRow;
       });
     },
     enabled: !!isAdmin,
