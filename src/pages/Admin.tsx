@@ -140,7 +140,7 @@ export default function Admin() {
     enabled: !!isAdmin,
   });
 
-  const { data: restrictions = [] } = useQuery<RestrictionRow[]>({
+  const { data: restrictions = [] as RestrictionRow[] } = useQuery({
     queryKey: ['admin-restrictions'],
     queryFn: async () => {
       const { data } = await supabase

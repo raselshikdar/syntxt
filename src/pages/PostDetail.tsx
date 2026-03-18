@@ -74,6 +74,7 @@ function usePostDetail(postId: string | undefined) {
           reply_to: p.reply_to,
           created_at: p.created_at,
           handle: profileMap.get(p.user_id) ?? 'unknown',
+          image_url: p.image_url ?? null,
           like_count: postLikes.length,
           repost_count: 0,
           reply_count: replyCountMap.get(p.id) ?? 0,
