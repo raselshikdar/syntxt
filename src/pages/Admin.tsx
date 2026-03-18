@@ -98,7 +98,7 @@ export default function Admin() {
     enabled: !!isAdmin,
   });
 
-  const { data: reports = [] } = useQuery<ReportRow[]>({
+  const { data: reports = [] as ReportRow[] } = useQuery({
     queryKey: ['admin-reports'],
     queryFn: async () => {
       const { data } = await supabase
