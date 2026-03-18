@@ -12,14 +12,14 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 function usePostDetail(postId: string | undefined) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['post-detail', postId, user?.id],
+    // শুধুমাত্র এই লাইনে 'posts' স্ট্রিংটি যুক্ত করা হয়েছে
+    queryKey: ['posts', 'post-detail', postId, user?.id],
     queryFn: async (): Promise<{ post: PostWithProfile | null; replies: PostWithProfile[]; parentPosts: PostWithProfile[] }> => {
       if (!postId) return { post: null, replies: [], parentPosts: [] };
 
       const { data: postRow } = await supabase.from('posts').select('*').eq('id', postId).single();
       if (!postRow) return { post: null, replies: [], parentPosts: [] };
 
-      // প্যারেন্ট থ্রেড খুঁজে বের করার লজিক (ভিজ্যুয়াল নয়, শুধু ডাটা)
       let parentRows: any[] = [];
       let currentParentId = postRow.reply_to;
       while (currentParentId) {
@@ -32,7 +32,6 @@ function usePostDetail(postId: string | undefined) {
 
       const { data: replies } = await supabase.from('posts').select('*').eq('reply_to', postId).order('created_at', { ascending: true });
 
-      // রিপোস্টের অরিজিনাল ডাটা ফেচিং
       const allRows = [postRow, ...parentRows, ...(replies ?? [])];
       const repostIds = allRows.filter(r => r.repost_of).map(r => r.repost_of);
       let originalsMap = new Map();
