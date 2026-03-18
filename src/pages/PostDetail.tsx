@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // useQueryClient যুক্ত করা হয়েছে লজিকের জন্য
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
@@ -12,7 +12,7 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 function usePostDetail(postId: string | undefined) {
   const { user } = useAuth();
   return useQuery({
-    // শুধুমাত্র এই লাইনে 'posts' স্ট্রিংটি যুক্ত করা হয়েছে
+    // QueryKey-তে 'posts' এবং 'post-detail' দুটিই রাখা হয়েছে যাতে refetch কাজ করে
     queryKey: ['posts', 'post-detail', postId, user?.id],
     queryFn: async (): Promise<{ post: PostWithProfile | null; replies: PostWithProfile[]; parentPosts: PostWithProfile[] }> => {
       if (!postId) return { post: null, replies: [], parentPosts: [] };
@@ -92,6 +92,9 @@ function usePostDetail(postId: string | undefined) {
       };
     },
     enabled: !!postId,
+    // এটি নিশ্চিত করবে যে ব্যাকগ্রাউন্ডে ডাটা সবসময় ফ্রেশ থাকে
+    refetchOnWindowFocus: true,
+    staleTime: 0 
   });
 }
 
