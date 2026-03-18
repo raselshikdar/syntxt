@@ -121,7 +121,7 @@ export default function Admin() {
       const { data: postProfiles } = postUserIds.length > 0
         ? await supabase.from('profiles').select('user_id, handle').in('user_id', postUserIds)
         : { data: [] };
-      const postHandleMap = new Map(postProfiles?.map(p => [p.user_id, p.handle]) ?? []);
+      const postHandleMap = new Map<string, string>(postProfiles?.map(p => [p.user_id, p.handle] as [string, string]) ?? []);
 
       return (data as any[]).map(r => {
         const post = postMap.get(r.post_id);
