@@ -98,7 +98,8 @@ export function usePosts() {
   return useQuery({
     queryKey: ['posts', user?.id],
     queryFn: () => fetchPosts(user?.id),
-    refetchInterval: 15000,
+    staleTime: 30000,
+    refetchInterval: 30000,
   });
 }
 
