@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
 import GuestBottomNav from '@/components/GuestBottomNav';
+import { SkeletonPostList } from '@/components/SkeletonPost';
 import type { PostWithProfile } from '@/hooks/usePosts';
 
 function usePostDetail(postId: string | undefined) {
