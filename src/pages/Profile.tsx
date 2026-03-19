@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts } from '@/hooks/usePosts';
 import { useFollowStatus, useFollowCounts, useToggleFollow } from '@/hooks/useFollow';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { SkeletonProfile, SkeletonPostList } from '@/components/SkeletonPost';
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
