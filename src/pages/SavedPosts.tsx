@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
+import { SkeletonPostList } from '@/components/SkeletonPost';
 import { useSavedPosts } from '@/hooks/usePosts';
 
 export default function SavedPosts() {
