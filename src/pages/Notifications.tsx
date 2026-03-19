@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUnreadCount } from '@/hooks/useNotifications';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
-import { useEffect } from 'react';
+import { SkeletonNotificationList } from '@/components/SkeletonPost';
 
 interface Notification {
   id: string;
