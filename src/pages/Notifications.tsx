@@ -89,7 +89,7 @@ export default function Notifications() {
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
         <h2 className="text-xs uppercase tracking-label text-muted-foreground font-semibold">Notifications</h2>
         {isLoading ? (
-          <p className="text-center text-muted-foreground text-sm py-16">Loading...</p>
+          <SkeletonNotificationList count={8} />
         ) : notifications.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-16">No notifications yet.</p>
         ) : (

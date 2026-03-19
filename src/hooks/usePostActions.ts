@@ -16,13 +16,26 @@ export function usePostActions() {
   };
 
   const optimisticUpdate = (postId: string, updater: (post: PostWithProfile) => PostWithProfile) => {
-    const queryKeys = [['posts'], ['saved-posts'], ['user-posts'], ['post-detail']];
-    queryKeys.forEach(key => {
+    // Update array-based queries
+    const arrayKeys = [['posts'], ['saved-posts'], ['user-posts']];
+    arrayKeys.forEach(key => {
       qc.setQueriesData<PostWithProfile[]>({ queryKey: key }, (old) => {
         if (!old) return old;
         return old.map(p => p.id === postId ? updater(p) : p);
       });
     });
+    // Update post-detail queries (object shape: { post, replies, parentPosts })
+    qc.setQueriesData<{ post: PostWithProfile | null; replies: PostWithProfile[]; parentPosts: PostWithProfile[] }>(
+      { queryKey: ['post-detail'] },
+      (old) => {
+        if (!old) return old;
+        return {
+          post: old.post?.id === postId ? updater(old.post) : old.post,
+          replies: old.replies.map(p => p.id === postId ? updater(p) : p),
+          parentPosts: old.parentPosts.map(p => p.id === postId ? updater(p) : p),
+        };
+      }
+    );
   };
 
   const toggleLike = async (postId: string) => {

@@ -115,7 +115,7 @@ export default function PostDetail() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
-        {isLoading && <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>}
+        {isLoading && <SkeletonPostList count={3} />}
         {data?.parentPosts.map(p => <PostCard key={p.id} post={p} />)}
         {data?.post && <PostCard post={data.post} />}
         {data && data.replies.length > 0 && (

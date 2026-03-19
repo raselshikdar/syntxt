@@ -28,7 +28,7 @@ export default function Index() {
       <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
         {user && <FeedSwitcher mode={mode} onChange={setMode} />}
         {isLoading ? (
-          <div className="text-center py-16 text-muted-foreground text-sm">Loading...</div>
+          <SkeletonPostList count={8} />
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground text-sm">
             The void is silent. {mode === 'following' ? 'Follow someone to see posts.' : 'Be the first to signal.'}

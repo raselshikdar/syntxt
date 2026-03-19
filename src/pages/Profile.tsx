@@ -40,6 +40,33 @@ export default function Profile() {
     ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/banners/${(profile as any).banner_url}`
     : null;
 
+  const { isLoading: profileLoading } = useQuery({
+    queryKey: ['profile', handle],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('handle', handle!).maybeSingle();
+      return data;
+    },
+    enabled: !!handle,
+  });
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 h-14">
+            <ArrowLeft size={18} />
+            <span className="text-sm font-bold">Loading...</span>
+          </div>
+        </header>
+        <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
+          <SkeletonProfile />
+          <SkeletonPostList count={3} />
+        </div>
+        {user ? <BottomNav /> : <GuestBottomNav />}
+      </div>
+    );
+  }
+
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
