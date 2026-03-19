@@ -6,7 +6,8 @@ import ComposeFAB from '@/components/ComposeFAB';
 import ComposeModal from '@/components/ComposeModal';
 import BottomNav from '@/components/BottomNav';
 import GuestBottomNav from '@/components/GuestBottomNav';
-import ScrollToTopBtn from '@/components/ScrollToTopBtn'; // শুধুমাত্র এটি যুক্ত করা হয়েছে
+import ScrollToTopBtn from '@/components/ScrollToTopBtn';
+import { SkeletonPostList } from '@/components/SkeletonPost';
 import { usePosts } from '@/hooks/usePosts';
 import { useFollowingIds } from '@/hooks/useFollow';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,7 +44,7 @@ export default function Index() {
       </div>
       {user && (
         <>
-          <ScrollToTopBtn /> {/* শুধুমাত্র এটি যুক্ত করা হয়েছে */}
+          <ScrollToTopBtn />
           <ComposeFAB onClick={() => setComposeOpen(true)} />
           <ComposeModal open={composeOpen} onClose={() => setComposeOpen(false)} />
           <BottomNav />
