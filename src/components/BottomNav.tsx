@@ -22,7 +22,8 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 h-14 bg-nav border-t border-nav-border z-30 flex items-center justify-around max-w-2xl mx-auto">
       {items.map(({ icon: Icon, path, label }) => {
         const active = pathname === path;
-        const showBadge = path === '/notifications' && unreadCount > 0;
+        const showBadge = (path === '/notifications' && unreadCount > 0) || (path === '/messages' && unreadMessages > 0);
+        const badgeCount = path === '/notifications' ? unreadCount : unreadMessages;
         return (
           <motion.button
             key={path}
