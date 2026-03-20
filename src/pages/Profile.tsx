@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
@@ -7,10 +8,11 @@ import BottomNav from '@/components/BottomNav';
 import GuestBottomNav from '@/components/GuestBottomNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserPosts } from '@/hooks/usePosts';
+import { useUserPosts, useSavedPosts } from '@/hooks/usePosts';
 import { useFollowStatus, useFollowCounts, useToggleFollow } from '@/hooks/useFollow';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { SkeletonProfile, SkeletonPostList } from '@/components/SkeletonPost';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
@@ -30,6 +32,7 @@ export default function Profile() {
   const { data: isFollowing = false } = useFollowStatus(profile?.user_id);
   const { data: counts = { followers: 0, following: 0 } } = useFollowCounts(profile?.user_id);
   const { data: userPosts = [] } = useUserPosts(profile?.user_id);
+  const { data: savedPosts = [] } = useSavedPosts();
   const toggleFollow = useToggleFollow();
 
   const avatarUrl = profile?.avatar_url
@@ -159,14 +162,41 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
-          {userPosts.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
-          ) : (
-            userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)
-          )}
-        </div>
+        {isOwn ? (
+          <Tabs defaultValue="signals" className="space-y-4">
+            <TabsList className="w-full">
+              <TabsTrigger value="signals" className="flex-1 text-xs uppercase tracking-label font-semibold">Signals</TabsTrigger>
+              <TabsTrigger value="bookmarks" className="flex-1 text-xs uppercase tracking-label font-semibold">Bookmarks</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signals">
+              {userPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="bookmarks">
+              {savedPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm py-8">No bookmarks yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {savedPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
+            {userPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
+            ) : (
+              userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)
+            )}
+          </div>
+        )}
       </div>
       {user ? <BottomNav /> : <GuestBottomNav />}
     </div>

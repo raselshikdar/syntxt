@@ -8,6 +8,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import SavedPosts from "./pages/SavedPosts";
+import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
@@ -70,6 +71,7 @@ const AppRoutes = () => (
     <Route path="/u/:handle" element={<Profile />} />
     <Route path="/post/:postId" element={<PostDetail />} />
     <Route path="/saved" element={<ProtectedRoute><SavedPosts /></ProtectedRoute>} />
+    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
     <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
