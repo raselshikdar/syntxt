@@ -8,6 +8,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import SavedPosts from "./pages/SavedPosts";
+import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
