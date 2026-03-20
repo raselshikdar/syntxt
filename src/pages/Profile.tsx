@@ -32,6 +32,7 @@ export default function Profile() {
   const { data: isFollowing = false } = useFollowStatus(profile?.user_id);
   const { data: counts = { followers: 0, following: 0 } } = useFollowCounts(profile?.user_id);
   const { data: userPosts = [] } = useUserPosts(profile?.user_id);
+  const { data: savedPosts = [] } = useSavedPosts();
   const toggleFollow = useToggleFollow();
 
   const avatarUrl = profile?.avatar_url
