@@ -162,14 +162,41 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
-          {userPosts.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
-          ) : (
-            userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)
-          )}
-        </div>
+        {isOwn ? (
+          <Tabs defaultValue="signals" className="space-y-4">
+            <TabsList className="w-full">
+              <TabsTrigger value="signals" className="flex-1 text-xs uppercase tracking-label font-semibold">Signals</TabsTrigger>
+              <TabsTrigger value="bookmarks" className="flex-1 text-xs uppercase tracking-label font-semibold">Bookmarks</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signals">
+              {userPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="bookmarks">
+              {savedPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground text-sm py-8">No bookmarks yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {savedPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="text-xs uppercase tracking-label text-muted-foreground font-semibold px-1">Signals</h3>
+            {userPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground text-sm py-8">No signals yet.</p>
+            ) : (
+              userPosts.map((post, i) => <PostCard key={post.id} post={post} index={i} />)
+            )}
+          </div>
+        )}
       </div>
       {user ? <BottomNav /> : <GuestBottomNav />}
     </div>

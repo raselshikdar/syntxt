@@ -35,7 +35,7 @@ export default function BottomNav() {
             <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
             {showBadge && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full px-1">
-                {unreadCount > 99 ? '99+' : unreadCount}
+                {badgeCount > 99 ? '99+' : badgeCount}
               </span>
             )}
           </motion.button>
