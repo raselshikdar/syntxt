@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
@@ -7,10 +8,11 @@ import BottomNav from '@/components/BottomNav';
 import GuestBottomNav from '@/components/GuestBottomNav';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserPosts } from '@/hooks/usePosts';
+import { useUserPosts, useSavedPosts } from '@/hooks/usePosts';
 import { useFollowStatus, useFollowCounts, useToggleFollow } from '@/hooks/useFollow';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { SkeletonProfile, SkeletonPostList } from '@/components/SkeletonPost';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function Profile() {
   const { handle } = useParams<{ handle: string }>();
