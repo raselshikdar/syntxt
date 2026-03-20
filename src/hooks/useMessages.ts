@@ -67,9 +67,9 @@ export function useConversations() {
 
       const { data: profiles } = otherUserIds.length > 0
         ? await supabase.from('profiles').select('user_id, handle, avatar_url, full_name').in('user_id', otherUserIds)
-        : { data: [] };
+        : { data: [] as { user_id: string; handle: string; avatar_url: string | null; full_name: string | null }[] };
 
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
+      const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p] as const));
 
       // Get last message per conversation
       const { data: messages } = await supabase
