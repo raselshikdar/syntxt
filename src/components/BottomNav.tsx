@@ -1,13 +1,14 @@
-import { Home, Search, Bell, Bookmark, Settings } from 'lucide-react';
+import { Home, Search, MessageCircle, Bell, Settings } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useUnreadCount } from '@/hooks/useNotifications';
+import { useUnreadMessagesCount } from '@/hooks/useMessages';
 
 const items = [
   { icon: Home, path: '/', label: 'Home' },
   { icon: Search, path: '/search', label: 'Search' },
+  { icon: MessageCircle, path: '/messages', label: 'Messages' },
   { icon: Bell, path: '/notifications', label: 'Notifications' },
-  { icon: Bookmark, path: '/saved', label: 'Saved' },
   { icon: Settings, path: '/settings', label: 'Settings' },
 ];
 
