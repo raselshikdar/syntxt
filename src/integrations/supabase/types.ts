@@ -243,6 +243,7 @@ export type Database = {
           id: string
           updated_at: string
           user_id: string
+          verified: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -254,6 +255,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id: string
+          verified?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -265,6 +267,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+          verified?: boolean
         }
         Relationships: []
       }
@@ -379,6 +382,45 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_requests: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string
+          document_url: string
+          id: string
+          review_note: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type: string
+          document_url: string
+          id?: string
+          review_note?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          document_url?: string
+          id?: string
+          review_note?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
