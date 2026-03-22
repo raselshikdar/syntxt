@@ -9,6 +9,7 @@ interface ProfileData {
   avatar_url: string | null;
   full_name: string | null;
   banner_url: string | null;
+  verified: boolean;
 }
 
 interface AuthContextType {
