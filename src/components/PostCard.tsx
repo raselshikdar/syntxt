@@ -203,9 +203,10 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
         <div className="flex justify-between items-baseline">
           <span
             onClick={(e) => { e.stopPropagation(); navigate(`/u/${displayHandle}`); }}
-            className="font-bold text-sm text-handle hover:underline cursor-pointer"
+            className="font-bold text-sm text-handle hover:underline cursor-pointer inline-flex items-center gap-1"
           >
             @{displayHandle}
+            {post.verified && <VerifiedBadge size={14} />}
           </span>
           <span className="text-[10px] uppercase tracking-label text-timestamp">
             {timeAgo(post.created_at)}
