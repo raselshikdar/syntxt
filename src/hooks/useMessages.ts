@@ -226,22 +226,23 @@ export function useCreateConversation() {
         }
       }
 
-      // Create new conversation
-      const { data: conv, error: convError } = await supabase
+      // Create new conversation with client-generated ID to avoid RLS SELECT block
+      const convId = crypto.randomUUID();
+      const { error: convError } = await supabase
         .from('conversations')
-        .insert({})
-        .select('id')
-        .single();
+        .insert({ id: convId });
 
-      if (convError || !conv) throw convError;
+      if (convError) throw convError;
 
       // Add participants
-      await supabase.from('conversation_participants').insert([
-        { conversation_id: conv.id, user_id: user.id },
-        { conversation_id: conv.id, user_id: otherUserId },
+      const { error: partError } = await supabase.from('conversation_participants').insert([
+        { conversation_id: convId, user_id: user.id },
+        { conversation_id: convId, user_id: otherUserId },
       ]);
 
-      return conv.id;
+      if (partError) throw partError;
+
+      return convId;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
