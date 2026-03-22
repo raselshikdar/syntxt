@@ -33,8 +33,9 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
   if (error || !posts) return [];
 
   const userIds = [...new Set(posts.map(p => p.user_id))];
-  const { data: profiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', userIds);
+  const { data: profiles } = await supabase.from('profiles').select('user_id, handle, verified').in('user_id', userIds);
   const profileMap = new Map(profiles?.map(p => [p.user_id, p.handle]) ?? []);
+  const verifiedMap = new Map(profiles?.map(p => [p.user_id, (p as any).verified === true]) ?? []);
 
   const postIds = posts.map(p => p.id);
   const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', postIds);
