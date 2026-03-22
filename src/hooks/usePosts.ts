@@ -19,6 +19,7 @@ export interface PostWithProfile {
   reposted_by_me: boolean;
   original_content?: string;
   original_handle?: string;
+  verified?: boolean;
 }
 
 async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]> {
@@ -32,8 +33,9 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
   if (error || !posts) return [];
 
   const userIds = [...new Set(posts.map(p => p.user_id))];
-  const { data: profiles } = await supabase.from('profiles').select('user_id, handle').in('user_id', userIds);
+  const { data: profiles } = await supabase.from('profiles').select('user_id, handle, verified').in('user_id', userIds);
   const profileMap = new Map(profiles?.map(p => [p.user_id, p.handle]) ?? []);
+  const verifiedMap = new Map(profiles?.map(p => [p.user_id, (p as any).verified === true]) ?? []);
 
   const postIds = posts.map(p => p.id);
   const { data: likes } = await supabase.from('likes').select('post_id, user_id').in('post_id', postIds);
@@ -81,6 +83,7 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
       ...p,
       image_url: (p as any).image_url ?? null,
       handle: profileMap.get(p.user_id) ?? 'unknown',
+      verified: verifiedMap.get(p.user_id) ?? false,
       like_count: postLikes.length,
       repost_count: repostCountMap.get(p.id) ?? 0,
       reply_count: replyCountMap.get(p.id) ?? 0,

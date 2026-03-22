@@ -9,6 +9,7 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -202,9 +203,10 @@ export default function PostCard({ post, index = 0 }: { post: PostWithProfile; i
         <div className="flex justify-between items-baseline">
           <span
             onClick={(e) => { e.stopPropagation(); navigate(`/u/${displayHandle}`); }}
-            className="font-bold text-sm text-handle hover:underline cursor-pointer"
+            className="font-bold text-sm text-handle hover:underline cursor-pointer inline-flex items-center gap-1"
           >
             @{displayHandle}
+            {post.verified && <VerifiedBadge size={14} />}
           </span>
           <span className="text-[10px] uppercase tracking-label text-timestamp">
             {timeAgo(post.created_at)}

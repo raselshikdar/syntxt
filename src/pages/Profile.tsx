@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { useQuery } from '@tanstack/react-query';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
@@ -137,8 +138,8 @@ export default function Profile() {
             </div>
 
             <div className="mt-4 space-y-1">
-              {fullName && <h2 className="text-base font-bold">{fullName}</h2>}
-              <p className="text-sm text-handle font-semibold">@{profile.handle}</p>
+              {fullName && <h2 className="text-base font-bold inline-flex items-center gap-1">{fullName} {(profile as any)?.verified && <VerifiedBadge size={16} />}</h2>}
+              <p className="text-sm text-handle font-semibold inline-flex items-center gap-1">@{profile.handle} {!(fullName) && (profile as any)?.verified && <VerifiedBadge size={14} />}</p>
               {profile.bio && (
                 <p className="text-sm text-card-foreground leading-relaxed pt-1">{profile.bio}</p>
               )}

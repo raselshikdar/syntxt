@@ -9,6 +9,7 @@ interface ProfileData {
   avatar_url: string | null;
   full_name: string | null;
   banner_url: string | null;
+  verified: boolean;
 }
 
 interface AuthContextType {
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('handle, bio, user_id, avatar_url, full_name, banner_url').eq('user_id', user.id).maybeSingle()
+    supabase.from('profiles').select('handle, bio, user_id, avatar_url, full_name, banner_url, verified').eq('user_id', user.id).maybeSingle()
       .then(({ data }) => {
         setProfile(data as ProfileData | null);
         setLoading(false);

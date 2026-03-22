@@ -184,12 +184,34 @@ export function useSendMessage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Optimistically add message to cache
+      const tempId = crypto.randomUUID();
+      const tempMsg: Message = {
+        id: tempId,
+        conversation_id: conversationId,
+        sender_id: user.id,
+        content,
+        created_at: new Date().toISOString(),
+        read: false,
+      };
+
+      qc.setQueryData<Message[]>(['messages', conversationId], old => {
+        if (!old) return [tempMsg];
+        return [...old, tempMsg];
+      });
+
       const { error } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         sender_id: user.id,
         content,
       });
-      if (error) throw error;
+      if (error) {
+        // Rollback optimistic update
+        qc.setQueryData<Message[]>(['messages', conversationId], old =>
+          old?.filter(m => m.id !== tempId) ?? []
+        );
+        throw error;
+      }
 
       // Touch conversation updated_at
       await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId);
@@ -197,6 +219,12 @@ export function useSendMessage() {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['messages', vars.conversationId] });
       qc.invalidateQueries({ queryKey: ['conversations'] });
+    },
+    onError: (error: any) => {
+      console.error('Send message error:', error);
+      import('sonner').then(({ toast }) => {
+        toast.error('Failed to send message: ' + (error?.message || 'Unknown error'));
+      });
     },
   });
 }
