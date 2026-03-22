@@ -19,6 +19,7 @@ export interface PostWithProfile {
   reposted_by_me: boolean;
   original_content?: string;
   original_handle?: string;
+  verified?: boolean;
 }
 
 async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]> {
