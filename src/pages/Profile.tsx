@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { useQuery } from '@tanstack/react-query';
 import PostCard from '@/components/PostCard';
 import BottomNav from '@/components/BottomNav';
