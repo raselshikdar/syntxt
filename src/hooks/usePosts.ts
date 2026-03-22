@@ -83,6 +83,7 @@ async function fetchPosts(userId: string | undefined): Promise<PostWithProfile[]
       ...p,
       image_url: (p as any).image_url ?? null,
       handle: profileMap.get(p.user_id) ?? 'unknown',
+      verified: verifiedMap.get(p.user_id) ?? false,
       like_count: postLikes.length,
       repost_count: repostCountMap.get(p.id) ?? 0,
       reply_count: replyCountMap.get(p.id) ?? 0,
