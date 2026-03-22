@@ -9,6 +9,7 @@ import type { PostWithProfile } from '@/hooks/usePosts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 function timeAgo(dateStr: string): string {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
